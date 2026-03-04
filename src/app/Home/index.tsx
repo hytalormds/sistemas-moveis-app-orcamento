@@ -15,59 +15,12 @@ import {
   getItens,
   addItem,
   removeItem,
-  saveItens,
   updateItem,
 } from "../../storage/itemStorage";
 import { Orcamento, StatusOrcamento } from "../../types";
 import { OrcamentoCard } from "../../components/OrcamentoCard";
 
 import { styles } from "./styles";
-
-// Dados iniciais para demonstração
-const DADOS_INICIAIS: Orcamento[] = [
-  {
-    id: "1",
-    titulo: "Desenvolvimento de aplicativo de loja online",
-    cliente: "Soluções Tecnológicas Beta",
-    status: "Aprovado",
-    valorTotal: 22300,
-  },
-  {
-    id: "2",
-    titulo: "Consultoria em marketing digital",
-    cliente: "Marketing Wizards",
-    status: "Rascunho",
-    valorTotal: 4000,
-  },
-  {
-    id: "3",
-    titulo: "Serviços de SEO",
-    cliente: "SEO Masters",
-    status: "Enviado",
-    valorTotal: 3500,
-  },
-  {
-    id: "4",
-    titulo: "Criação de conteúdo",
-    cliente: "Content Creators",
-    status: "Rascunho",
-    valorTotal: 2500,
-  },
-  {
-    id: "5",
-    titulo: "Gestão de redes sociais",
-    cliente: "Social Experts",
-    status: "Recusado",
-    valorTotal: 1800,
-  },
-  {
-    id: "6",
-    titulo: "Design de interface",
-    cliente: "UI/UX Designers",
-    status: "Aprovado",
-    valorTotal: 5200,
-  },
-];
 
 const STATUS_OPCOES: StatusOrcamento[] = [
   "Rascunho",
@@ -98,16 +51,10 @@ export default function Home() {
     try {
       setEstaCarregando(true);
       const dados = await getItens();
-      // Se não tiver dados salvos, usa os dados iniciais e salva no storage
-      if (dados.length > 0) {
-        setOrcamentos(dados);
-      } else {
-        setOrcamentos(DADOS_INICIAIS);
-        await saveItens(DADOS_INICIAIS);
-      }
+      setOrcamentos(dados);
     } catch (error) {
       console.error("Erro ao carregar orçamentos:", error);
-      setOrcamentos(DADOS_INICIAIS);
+      setOrcamentos([]);
     } finally {
       setEstaCarregando(false);
     }
@@ -237,9 +184,7 @@ export default function Home() {
   return (
     <View style={styles.container}>
       {estaCarregando ? (
-        <View
-          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-        >
+        <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#6a4eff" />
         </View>
       ) : (
@@ -269,7 +214,7 @@ export default function Home() {
               clearButtonMode="while-editing"
             />
             <TouchableOpacity style={styles.filtroBotao}>
-              <Text style={{ fontSize: 20, color: "#6a4eff" }}>⚙️</Text>
+              <Text style={styles.filterButtonText}>⚙️</Text>
             </TouchableOpacity>
           </View>
 
@@ -283,7 +228,7 @@ export default function Home() {
                 onDelete={() => deletarOrcamento(item.id)}
               />
             )}
-            contentContainerStyle={{ paddingBottom: 50 }}
+            contentContainerStyle={styles.flatListContent}
             showsVerticalScrollIndicator={false}
           />
 
@@ -294,28 +239,10 @@ export default function Home() {
             visible={mostraModal}
             onRequestClose={fecharModal}
           >
-            <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)" }}>
-              <View
-                style={{
-                  backgroundColor: "white",
-                  borderTopLeftRadius: 20,
-                  borderTopRightRadius: 20,
-                  marginTop: "auto",
-                  padding: 20,
-                  paddingBottom: 40,
-                }}
-              >
-                <View
-                  style={{
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    marginBottom: 20,
-                  }}
-                >
-                  <Text
-                    style={{ fontSize: 20, fontWeight: "bold", color: "#000" }}
-                  >
+            <View style={styles.modalBackground}>
+              <View style={styles.modalContent}>
+                <View style={styles.modalHeader}>
+                  <Text style={styles.modalTitle}>
                     {orcamentoEmEdicao ? "Editar Orçamento" : "Novo Orçamento"}
                   </Text>
                   <TouchableOpacity onPress={fecharModal}>
@@ -324,15 +251,7 @@ export default function Home() {
                 </View>
 
                 <TextInput
-                  style={{
-                    borderWidth: 1,
-                    borderColor: "#ddd",
-                    borderRadius: 8,
-                    padding: 12,
-                    marginBottom: 12,
-                    fontSize: 14,
-                    color: "#000",
-                  }}
+                  style={styles.modalInput}
                   placeholder="Título do orçamento"
                   value={novoTitulo}
                   onChangeText={setNovoTitulo}
@@ -340,15 +259,7 @@ export default function Home() {
                 />
 
                 <TextInput
-                  style={{
-                    borderWidth: 1,
-                    borderColor: "#ddd",
-                    borderRadius: 8,
-                    padding: 12,
-                    marginBottom: 12,
-                    fontSize: 14,
-                    color: "#000",
-                  }}
+                  style={styles.modalInput}
                   placeholder="Nome do cliente"
                   value={novoCliente}
                   onChangeText={setNovoCliente}
@@ -356,15 +267,7 @@ export default function Home() {
                 />
 
                 <TextInput
-                  style={{
-                    borderWidth: 1,
-                    borderColor: "#ddd",
-                    borderRadius: 8,
-                    padding: 12,
-                    marginBottom: 12,
-                    fontSize: 14,
-                    color: "#000",
-                  }}
+                  style={styles.modalInput}
                   placeholder="Valor (ex: 1000,00)"
                   value={novoValor}
                   onChangeText={setNovoValor}
@@ -372,39 +275,26 @@ export default function Home() {
                   placeholderTextColor="#999"
                 />
 
-                <Text
-                  style={{
-                    fontSize: 14,
-                    fontWeight: "bold",
-                    color: "#000",
-                    marginBottom: 8,
-                  }}
-                >
-                  Status
-                </Text>
-                <View
-                  style={{ flexDirection: "row", gap: 8, marginBottom: 20 }}
-                >
+                <Text style={styles.statusLabel}>Status</Text>
+                <View style={styles.statusContainer}>
                   {STATUS_OPCOES.map((status) => (
                     <TouchableOpacity
                       key={status}
                       onPress={() => setNovoStatus(status)}
-                      style={{
-                        flex: 1,
-                        paddingVertical: 10,
-                        paddingHorizontal: 12,
-                        borderRadius: 8,
-                        backgroundColor:
-                          novoStatus === status ? "#6a4eff" : "#f0f0f0",
-                        alignItems: "center",
-                      }}
+                      style={[
+                        styles.statusButton,
+                        novoStatus === status
+                          ? styles.statusButtonActive
+                          : styles.statusButtonInactive,
+                      ]}
                     >
                       <Text
-                        style={{
-                          fontSize: 12,
-                          fontWeight: "500",
-                          color: novoStatus === status ? "#fff" : "#000",
-                        }}
+                        style={[
+                          styles.statusButtonText,
+                          novoStatus === status
+                            ? styles.statusButtonTextActive
+                            : styles.statusButtonTextInactive,
+                        ]}
                       >
                         {status}
                       </Text>
@@ -413,17 +303,10 @@ export default function Home() {
                 </View>
 
                 <TouchableOpacity
-                  style={{
-                    backgroundColor: "#6a4eff",
-                    padding: 14,
-                    borderRadius: 8,
-                    alignItems: "center",
-                  }}
+                  style={styles.submitButton}
                   onPress={criarNovoOrcamento}
                 >
-                  <Text
-                    style={{ color: "white", fontSize: 16, fontWeight: "bold" }}
-                  >
+                  <Text style={styles.submitButtonText}>
                     {orcamentoEmEdicao
                       ? "Atualizar Orçamento"
                       : "Criar Orçamento"}

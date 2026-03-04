@@ -1,16 +1,10 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Orcamento } from "../types";
+import AsyncStorage from "@react-native-async-storage/async-storage"; // Importação do AsyncStorage para armazenamento local
+import { Orcamento } from "../types"; // Importação do tipo Orcamento para tipagem dos itens armazenados
 
-const KEY = "@orcamentos:itens";
+const KEY = "@orcamentos:itens"; // Chave utilizada para armazenar os itens no AsyncStorage, garantindo que os dados sejam organizados e acessíveis
 
-// Re-exportar tipo para compatibilidade
-export type Item = Orcamento;
-
-/**
- * Busca todos os orçamentos armazenados
- * @returns Lista de orçamentos ou array vazio em caso de erro
- */
 export async function getItens(): Promise<Orcamento[]> {
+  // Usada para obter os itens armazenados (retorna uma lista de orçamentos)
   try {
     const jsonValue = await AsyncStorage.getItem(KEY);
     return jsonValue ? JSON.parse(jsonValue) : [];
@@ -20,27 +14,8 @@ export async function getItens(): Promise<Orcamento[]> {
   }
 }
 
-/**
- * Busca um orçamento específico pelo ID
- * @param id - ID do orçamento a buscar
- * @returns O orçamento encontrado ou null se não existir
- */
-export async function getItem(id: string): Promise<Orcamento | null> {
-  try {
-    const itens = await getItens();
-    return itens.find((item) => item.id === id) || null;
-  } catch (error) {
-    console.error("Erro ao obter item:", error);
-    return null;
-  }
-}
-
-/**
- * Salva a lista de orçamentos no armazenamento
- * @param itens - Lista de orçamentos a salvar
- * @throws Erro se não conseguir salvar
- */
 export async function saveItens(itens: Orcamento[]): Promise<void> {
+  // Usada para salvar a lista de itens no AsyncStorage (recebe uma lista de orçamentos e a armazena)
   try {
     const jsonValue = JSON.stringify(itens);
     await AsyncStorage.setItem(KEY, jsonValue);
@@ -50,12 +25,8 @@ export async function saveItens(itens: Orcamento[]): Promise<void> {
   }
 }
 
-/**
- * Adiciona um novo orçamento ao armazenamento
- * @param newItem - Orçamento a ser adicionado
- * @throws Erro se o orçamento já existe
- */
 export async function addItem(newItem: Orcamento): Promise<void> {
+  // Usada para adicionar um novo item à lista de itens armazenados (recebe um orçamento e o adiciona à lista existente, garantindo que não haja duplicatas)
   try {
     const itens = await getItens();
 
@@ -72,13 +43,7 @@ export async function addItem(newItem: Orcamento): Promise<void> {
   }
 }
 
-/**
- * Atualiza um orçamento existente
- * @param id - ID do orçamento a atualizar
- * @param updatedData - Dados atualizados (parciais ou completos)
- * @throws Erro se orçamento não existe ou falha ao salvar
- */
-export async function updateItem(
+export async function updateItem( // Usada para atualizar um item existente na lista de itens armazenados (recebe o ID do item a ser atualizado e os dados atualizados, garantindo que o item exista antes de tentar atualizar)
   id: string,
   updatedData: Partial<Orcamento>,
 ): Promise<void> {
@@ -98,12 +63,8 @@ export async function updateItem(
   }
 }
 
-/**
- * Remove um orçamento do armazenamento
- * @param id - ID do orçamento a remover
- * @throws Erro se orçamento não existe ou falha ao salvar
- */
 export async function removeItem(id: string): Promise<void> {
+  // Usada para remover um item da lista de itens armazenados (recebe o ID do item a ser removido, garantindo que o item exista antes de tentar remover)
   try {
     const itens = await getItens();
     const itemExiste = itens.some((item) => item.id === id);
@@ -120,11 +81,8 @@ export async function removeItem(id: string): Promise<void> {
   }
 }
 
-/**
- * Remove todos os orçamentos do armazenamento (reset)
- * @throws Erro se falha ao limpar
- */
 export async function clearAllItens(): Promise<void> {
+  // Usada para limpar todos os itens do AsyncStorage
   try {
     await AsyncStorage.removeItem(KEY);
   } catch (error) {
